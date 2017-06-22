@@ -76,7 +76,7 @@ function movieCommand(command, input) {
 	console.log(queryUrl);
 	request(queryUrl, function(error, response, body) {
   
-  	if (!error && response.statusCode === 200) {
+  	if (!error && response.statusCode) {
    	var movieData = JSON.parse(body);
             //console.log(movieData);
             console.log("Title: " + movieData.Title);
@@ -101,10 +101,10 @@ function randomCommand(command, input) {
 				console.log(output[i]);
 				command = output[0];
 				input = output[1].replace(/"/g, '');
-				spotifyCommand(command, input)
+				spotifyCommand(command, input.trim())
 			};
-
+			console.log(command);
+			console.log(input);
 	});
 
 }
-
