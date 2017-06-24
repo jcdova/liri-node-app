@@ -30,7 +30,7 @@ switch (command) {
 	    break;
 
 	 //instructions
-	 default: console.log("Enter a COMMAND following the coresponding INPUT of your choice." + "\r\n" +
+	 default: console.log("Enter a COMMAND following the corresponding INPUT of your choice." + "\r\n" +
 	 	"Remember to add quotation for INPUT with multiple words." + "\r\n\r\n" +
 	 	"EXAMPLE: ----> $  COMMAND INPUT" + "\r\n" + 
 	 	"                       or                "+ "\r\n" + 
