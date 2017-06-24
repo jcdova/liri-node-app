@@ -1,5 +1,5 @@
-console.log('this is loaded');
-exports.twitterkeys = {
+// console.log('this is loaded');
+exports.twitterKeys = {
 	consumer_key: 'thFTp9aAzNIqaqD0fR5XGdZys',
 	consumer_secret: 'be56xhDsF9jJZovOmCTJVxbwSWKMicjny0VVgT7PdFxIfwBXYd',
 	consumer_token_key: '876893904796176385-i9SgI9ZD7HCDfutR9Wk1LobZE50aAdy',

@@ -1,20 +1,17 @@
+
+// declaring npm packages and files containing keys
 var Twitter = require('twitter');
-var twitterKey = require('./keys.js');
-var spotify = require('spotify');
+var key = require('./keys.js');
+var Spotify = require('node-spotify-api');
+var spotkey = require('./spotifykeys.js');
 var request = require('request');
 var fs = require("fs");
 
+//initalizing variables
 var command = process.argv[2];
-var input = '';
-// var logData = '';
+var outputRead = '';
 
-for (var i = 3; i < process.argv.length; i++) {
-    input = input + process.argv[i] + ' ';
-};
-
-input = input.trim();
-console.log('');
-
+//user picks a command as the first argument
 switch (command) {
 	case "my-tweets":
 		twitterCommand();
@@ -31,80 +28,150 @@ switch (command) {
 	 case "do-what-it-says":
 	    randomCommand();
 	    break;
+
+	 //instructions
+	 default: console.log("Enter a COMMAND following the coresponding INPUT of your choice." + "\r\n" +
+	 	"Remember to add quotation for INPUT with multiple words." + "\r\n\r\n" +
+	 	"EXAMPLE: ----> $  COMMAND INPUT" + "\r\n" + 
+	 	"                       or                "+ "\r\n" + 
+	 	"EXAMPLE: ----> $  COMMAND 'INPUT with multiple words'" + "\r\n");
 };
 
+//functions===================================================================
 
-function twitterCommand(command, input) {
-	var client = new Twitter(twitterKey.twitterKeys);
-	var accountName = 'fourcinco100';
-	var params = {screen_name: accountName, count: 5};
-	client.get('statuses/user_timeline.json', params, function(error, tweets, response) {
+// searches 20 tweets from a specific user using the Twitter api
+function twitterCommand() {
+	var client = new Twitter({
+			consumer_key: key.twitterKeys.consumer_key,
+			consumer_secret: key.twitterKeys.consumer_secret,
+			access_token_key: key.twitterKeys.access_token_key,
+			access_token_secret: key.twitterKeys.access_token_secret, 
+	});
+	var inputUser = process.argv[3];
+	if(!inputUser) {
+		var accountName = "georgelopez";
+	}
+	var params = {screen_name: accountName, count: 20};
+	client.get("statuses/user_timeline/", params, function(error, data, response) {
 		console.log('@' + accountName + " Tweets: ");
 		if (!error) {
-			// for (var i = 0; i < 4; i++) {
-			// console.log(tweets[i].created_at);
-			// console.log((i + 1) + ": " + tweets[i].text);
-			// console.log('');
-			console.log(tweets);
+			for (var i = 0; i < data.length; i++) {
+			var twitterInfo = 
+			"---------" + (i+1) + "---------" + "\r\n" +
+			"@" + data[i].user.screen_name + ": " + 
+			data[i].text + "\r\n" + 
+			data[i].created_at + "\r\n"; 
+			console.log(twitterInfo);
+			log(twitterInfo);	
 			}
-		// }
-		else {
+		} else {
 			console.log('This Error Occurred: ' + error)
+			return;
 		}
 	});
 };
 
-function spotifyCommand(command, input) {
-	spotify.search({type: 'track', query: input}, function(err, data) {
-            var find = data.tracks.items[0];
-            if (err) {
-                console.log('Error occurred: ' + err);
-                return;
-            }
-            console.log("Artist: " + find.artists[0].name);
-            console.log("Song: " + find.name);
-            console.log("Link: " + find.external_urls.spotify); 
-            console.log("Album: " + find.album.name + '\n');    
-            
-        });
+//searches for a song to  obtain song information using the Spotify api
+function spotifyCommand(inputSong) {
+	var inputSong = process.argv[3];
+	var spotify = new Spotify({
+	  id: spotkey.spotifyKeys.id,
+	  secret: spotkey.spotifyKeys.secret
+	  });
+	if(!inputSong) {
+		inputSong = "Billie Jean"; //default song INPUT
+	};
 
+	spotify.search({type: 'track', query: inputSong}, function(err, data) {
+             if (!err) {
+	     	 var spotifyInfo =
+             "\r\n" +
+             "Artist: " + data.tracks.items[0].artists[0].name + "\r\n" +  
+             "Song: " + data.tracks.items[0].name + "\r\n" +
+             "Preview Link: " + data.tracks.items[0].preview_url + "\r\n" +
+             "Album: " + data.tracks.items[0].album.name + "\r\n"; 
+             console.log(spotifyInfo);
+             log(spotifyInfo);
+             } 
+             else { 
+             	console.log('Error occurred: ' + err);
+             	return;
+             }	
+     })
 };
 
-function movieCommand(command, input) {
-	var queryUrl = "http://www.omdbapi.com/?t=" + input + "&y=&plot=short&apikey=40e9cece";
+//searches for a movie to  obtain movie information using the omdb api
+function movieCommand() {
+	var inputMovie = process.argv[3];
+	if(!inputMovie){
+		inputMovie = "Mr. Nobody"; //default movie INPUT
+	}
+	var queryUrl = "http://www.omdbapi.com/?t=" + inputMovie + "&y=&plot=short&&apikey=40e9cece&r=json&tomatoes=true";
 
-	console.log(queryUrl);
 	request(queryUrl, function(error, response, body) {
   
   	if (!error && response.statusCode) {
    	var movieData = JSON.parse(body);
-            //console.log(movieData);
-            console.log("Title: " + movieData.Title);
-            console.log("Year: " + movieData.Year);
-            console.log("IMDB Rating: " + movieData.imdbRating);
-            console.log("Country: " + movieData.Country);
-            console.log("Language: " + movieData.Language);
-            console.log("Plot: " + movieData.Plot);
-            console.log("Actors: " + movieData.Actors);
-            console.log("Rotten Tomatoes URL: " + 'https://www.rottentomatoes.com/m/' + input + '\n');
+   	var movieInfo = 
+			"\r\n" +
+            "Title: " + movieData.Title + "\r\n" +
+            "Year: " + movieData.Year + "\r\n" +
+            "IMDB Rating: " + movieData.imdbRating + "\r\n" +
+            "Country: " + movieData.Country + "\r\n" +
+            "Language: " + movieData.Language + "\r\n" +
+            "Plot: " + movieData.Plot + "\r\n" +
+            "Actors: " + movieData.Actors + "\r\n" +
+            "Rotten Tomatoes URL: " + movieData.tomatoURL + "\r\n";
+            console.log(movieInfo);
+            log(movieInfo);
  	}	
 });
 };
 
-function randomCommand(command, input) {
+//reads the random.txt file uses the information in to run spotifyReadCommand function
+function randomCommand() {
 	fs.readFile("random.txt", "utf8", function(err, data) {
-		if (err) {
-			return console.log(err);
-		}
+		if (!err) {	
 		var output = data.split(',');
-			for (i = 0, j = output.length; i < j; i++) {
-				console.log(output[i]);
-				command = output[0];
-				input = output[1].replace(/"/g, '');
-				spotifyCommand(command, input.trim())
-			};
-			console.log(command);
-			console.log(input);
+		outputRead = output[1];
+		spotifyReadCommand(outputRead);
+		} 
+		else {
+			console.log("Error has occurred" + err);
+		}
+		
 	});
 
+};
+
+//searches for a song to obtain song information using the Spotify api removing the default song INPUT
+function spotifyReadCommand(outputRead) {
+	var spotify = new Spotify({
+	  id: spotkey.spotifyKeys.id,
+	  secret: spotkey.spotifyKeys.secret
+	  });
+	spotify.search({type: 'track', query: outputRead}, function(err, data) {
+             if (!err) {
+             var spotifyInfo2 =
+             "\r\n" +
+             "Artist: " + data.tracks.items[0].artists[0].name + "\r\n" +  
+             "Song: " + data.tracks.items[0].name + "\r\n" +
+             "Preview Link: " + data.tracks.items[0].preview_url + "\r\n" +
+             "Album: " + data.tracks.items[0].album.name + "\r\n"; 
+             console.log(spotifyInfo2);
+             log(spotifyInfo2);
+             } 
+             else { 
+             	console.log('Error occurred: ' + err);
+             	return;
+             }	
+     })
+};
+
+function log(logInfo) {
+	fs.appendFile("log.txt", logInfo, (error) => {
+	    if(error) {
+	      throw error;
+	    }
+	});
 }
